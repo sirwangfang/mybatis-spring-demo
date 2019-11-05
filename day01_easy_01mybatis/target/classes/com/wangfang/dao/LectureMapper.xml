@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//com.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangfang.dao.LectureMapper">
+    <select id="getLecture" parameterType="int" resultType="com.wangfang.domain.Lecture">
+        SELECT id,student_id,lecture_id,grade,note from t_student_lecture WHERE id = #{id}
+    </select>
+</mapper>

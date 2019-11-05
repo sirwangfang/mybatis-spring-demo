@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//com.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangfang.dao.StudentMapper">
+    <sql id="Base_Column_List">
+        id,cnname,sex,note,selfcard_no
+    </sql>
+
+    <resultMap id="student_map" type="student">
+        <id property="id" column="id"/>
+        <result property="cnName" column="cnname"/>
+        <result property="note" column="note"/>
+        <association property="studentSelfcard" column="id" select="com.wangfang.dao.StudentSelfcardMapper.getByStudentId"/>
+        <collection property="lectureList" column="id" select="com.wangfang.dao.StudentLectureMapper.getStudentLectureById"/>
+    </resultMap>
+
+    <select id="getStudent" parameterType="int" resultMap="student_map">
+        SELECT <include refid="Base_Column_List"/> FROM t_student WHERE id = #{id}
+    </select>
+
+
+    <resultMap id="studentMap2" type="student">
+        <id property="id" column="id"/>
+        <result property="cnname" column="cnname"/>
+        <result property="sex" column="sex"/>
+        <result property="note" column="note"/>
+        <association property="studentSelfcard" column="id" javaType="com.wangfang.domain.StudentSelfCard">
+            <result property="id" column="id"/>
+            <result property="studentId" column="student_id"/>
+            <result property="nativeStr" column="native"/>
+            <result property="issueDate" column="issue_date"/>
+            <result property="endDate" column="end_date"/>
+            <result property="note" column="note"/>
+        </association>
+
+        <collection property="lectureList" ofType="com.wangfang.domain.StudentLecture">
+            <result property="id" column="id"/>
+            <result property="studentId" column="student_id"/>
+            <result property="grade" column="grade"/>
+            <result property="note" column="note"/>
+            <association property="lecture" javaType="com.wangfang.domain.Lecture">
+                <result property="id" column="id"/>
+                <result property="lectureName" column="student_id"/>
+                <result property="note" column="lecture_id"/>
+            </association>
+        </collection>
+    </resultMap>
+
+    <select id="getAllStudent" resultMap="studentMap2">
+        SELECT s.id,s.cnname,s.sex,s.note,ss.id AS ssid,
+        ss.native AS ssnote,ss.issue_date,ss.end_date,ss.note AS ssnote,sl.id as slid,
+        sl.lecture_id,sl.grade,sl.note as slnote,l.lecture_name,l.note as lnote
+        FROM t_student s
+        LEFT JOIN  t_student_lecture sl ON s.id = sl.student_id
+        LEFT JOIN t_lecture l ON sl.lecture_id = l.id
+        LEFT JOIN t_student_selfcard ss ON s.id = ss.student_id
+    </select>
+</mapper>

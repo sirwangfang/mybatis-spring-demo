@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//com.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 全限定类名-->
+<mapper namespace="com.wangfang.dao.IUserDao">
+    <sql id="Base_Column_List" >
+      id,username,gender,birthday,address
+    </sql>
+    <resultMap id="usermap" type="user">
+        <id column="id" javaType="java.lang.Integer" jdbcType="NUMERIC" property="id"></id>
+        <id column="username" javaType="java.lang.String" jdbcType="VARCHAR" property="username"></id>
+        <id column="gender" javaType="java.lang.String" jdbcType="VARCHAR" property="gender"></id>
+        <id column="birthday" javaType="java.lang.String" jdbcType="TIMESTAMP" property="birthday"></id>
+        <id column="address" javaType="java.lang.String" jdbcType="VARCHAR" property="address"></id>
+        <result property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="gender" column="gender"/>
+        <result property="birthday" column="birthday"></result>
+        <result property="address" column="adress" typeHandler="com.wangfang.type_handler.MyStringTypeHandler"/>
+    </resultMap>
+
+
+    <select id="findAll" resultMap="usermap">
+        SELECT * FROM USER
+    </select>
+    <!--根据javaBean传参数-->
+    <select id="findUserByParamBean" resultMap="usermap" parameterType="userParam">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM USER WHERE 1 = 1
+        <if test=" id != null and id != ''">
+            AND id = #{id}
+        </if>
+        <if test="username != null and username != ''">
+            and username = #{username}
+        </if>
+    </select>
+
+    <!--根据@param传参数-->
+    <select id="getUserByParam" resultMap="usermap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM USER WHERE 1 = 1
+        <if test=" id != null and id != ''">
+            AND id = #{id}
+        </if>
+        <if test="username != null and username != ''">
+            and username = #{username}
+        </if>
+    </select>
+
+
+    <insert id="saveUser" parameterType="userParam" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO USER (username,gender,address,birthday) VALUES
+        (#{username},#{gender},#{address},#{birthday})
+    </insert>
+
+    <!--插入多条数据 -->
+    <insert id="saveUsers" parameterType="java.util.List">
+        INSERT INTO USER (userName,gender,address,birthday) VALUES
+        <foreach item="item" collection="list" separator=",">
+            (#{item.username}, #{item.gender}, #{item.address}, #{item.birthday})
+        </foreach>
+    </insert>
+
+
+    <update id="setUser">
+        UPDATE USER
+        <set>
+        <if test="address != null">ADRESS = #{address},</if>
+        <!--<if test="gender != null">GENDER = #{gender},</if>-->
+        <!--<if test="birthday != null">BIRTHDAY = #{birthday},</if>-->
+        <!--<if test="username != null">USERNAME = #{username},</if>-->
+        </set>
+        WHERE ID = #{id}
+    </update>
+
+
+    <!--choose when otherwise标签使用-->
+    <select id="getUserByTag2" parameterType="userparam" resultMap="usermap">
+        SELECT <include refid="Base_Column_List" />
+        FROM USER WHERE 1 = 1
+        <choose>
+            <when test="id != null and id !='' ">
+                AND id = #{id}
+            </when>
+            <when test="username != null and username !='' ">
+                AND username = #{username}
+            </when>
+            <otherwise>
+                and address IS NOT NULL
+            </otherwise>
+        </choose>
+    </select>
+
+    <!--trim where set标签-->
+    <select id="getUserByTag3" parameterType="userParam" resultMap="usermap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM USER
+        <where>
+            <if test="id != null and id != ''">
+                AND id = #{id}
+            </if>
+        </where>
+
+    </select>
+
+    <select id="getUserByTag5" parameterType="userParam" resultMap="usermap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM USER
+        <trim prefix="where" prefixOverrides="and">
+            <if test="id != null and id != ''">
+                AND id = #{id}
+            </if>
+        </trim>
+
+    </select>
+
+    <update id="setByTagPassByTrim" parameterType="user">
+        UPDATE USER
+          <trim prefix="SET" suffixOverrides=",">
+                  <if test="username != null and username != ''">
+                      username = #{username},
+                  </if>
+                  <if test="address != '' and address != null">
+                      address = #{address}
+                  </if>
+          </trim>
+        WHERE id = #{id}
+    </update>
+
+
+    <update id="setByTag" parameterType="user">
+        UPDATE USER
+          <set>
+            <if test="username != null and username != ''">
+                username = #{username},
+            </if>
+            <if test="address != '' and address != null">
+                address = #{address}
+            </if>
+          </set>
+        WHERE id = #{id}
+    </update>
+    
+    
+    <!--foreach便签-->
+    
+    <select id="getByForeach" resultMap="usermap">
+        SELECT <include refid="Base_Column_List"/> FROM USER 
+        WHERE gender IN 
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+
+    <!--bind标签-->
+
+    <select id="getUserByBind" resultMap="usermap">
+        <bind name="pattern" value="'%'+ paramter + '%'"/>
+        SELECT <include refid="Base_Column_List"/> FROM USER
+        <where>
+            <if test="username != null and username != ''">
+                AND username LIKE #{pattern}
+            </if>
+        </where>
+    </select>
+</mapper>
